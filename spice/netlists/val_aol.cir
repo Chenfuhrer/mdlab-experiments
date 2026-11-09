@@ -1,0 +1,21 @@
+* val_aol
+.include ../models.lib
+
+VCC vcc 0 12
+VEE vee 0 -12
+Vin inp 0 dc 0 ac 1
+XU inp 0 vcc vee out LM358
+RL out 0 100k
+
+.options reltol=1e-4 abstol=1e-12 vntol=1e-7
+
+.control
+set wr_singlescale
+set wr_vecnames
+option numdgt=9
+ac dec 100 0.1 10meg
+
+wrdata out.txt v(out)
+quit
+.endc
+.end

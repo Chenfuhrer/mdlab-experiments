@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>模电虚拟实验室</title>
+<meta name="description" content="低频（模拟）电子线路实验的浏览器端虚拟实验台：实时电路仿真、示波器、万用表、扫频仪。">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="lab">
+<a class="skip" href="#main">跳到正文</a>
+<header class="top">
+  <a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>模电虚拟实验室</a>
+  <nav id="expnav" class="expnav" aria-label="实验列表"></nav>
+</header>
+
+<main id="main">
+  <section class="exphead reveal">
+    <div class="exphead-l">
+      <p class="kicker" id="exp-no"></p>
+      <h1 id="exp-title"></h1>
+      <p class="lead" id="exp-lead"></p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="页面">
+      <button role="tab" data-tab="bench" aria-selected="true">实验台</button>
+      <button role="tab" data-tab="theory" aria-selected="false">原理讲解</button>
+      <button role="tab" data-tab="data" aria-selected="false">数据表</button>
+      <button role="tab" data-tab="qa" aria-selected="false">易错点 · 思考题</button>
+    </div>
+  </section>
+
+  <!-- ============ 实验台 ============ -->
+  <section class="pane bench" id="pane-bench" role="tabpanel">
+    <div class="bench-grid">
+      <article class="card paper sch-card reveal">
+        <header class="card-h">
+          <h2>电路</h2>
+          <div class="roles" id="roles" role="group" aria-label="点击原理图节点时分配给">
+            <span class="hint">点节点接探头 →</span>
+            <button data-role="ch1" aria-pressed="true"><i class="c1"></i>CH1 <em id="lab-ch1"></em></button>
+            <button data-role="ch2" aria-pressed="false"><i class="c2"></i>CH2 <em id="lab-ch2"></em></button>
+            <button data-role="dmm" aria-pressed="false"><i class="cv"></i>万用表 <em id="lab-dmm"></em></button>
+          </div>
+        </header>
+        <div id="schematic" class="schematic"></div>
+      </article>
+
+      <aside class="card controls reveal" aria-label="参数">
+        <header class="card-h"><h2>信号源与参数</h2></header>
+        <div id="controls"></div>
+      </aside>
+
+      <article class="inst scope-card reveal">
+        <header class="inst-h">
+          <span class="model">DSO · 2CH</span>
+          <div class="inst-btns">
+            <button data-coup="ch1" class="cb c1" title="CH1 耦合方式">AC</button>
+            <button data-coup="ch2" class="cb c2" title="CH2 耦合方式">AC</button>
+          </div>
+        </header>
+        <div class="scope-body">
+          <canvas id="scope" class="screen" aria-label="示波器屏幕"></canvas>
+          <dl class="meas">
+            <div class="mg c1"><dt>CH1 峰峰值</dt><dd id="m-ch1-vpp">—</dd><dt>频率</dt><dd id="m-ch1-f">—</dd><dt>平均值</dt><dd id="m-ch1-mean">—</dd></div>
+            <div class="mg c2"><dt>CH2 峰峰值</dt><dd id="m-ch2-vpp">—</dd><dt>频率</dt><dd id="m-ch2-f">—</dd><dt>THD</dt><dd id="m-ch2-thd">—</dd></div>
+            <div class="mg"><dt>CH2 / CH1</dt><dd id="m-gain">—</dd><dt>相位差 (2−1)</dt><dd id="m-phase">—</dd></div>
+          </dl>
+        </div>
+        <footer class="inst-f">
+          <span id="simstate" class="simstate" aria-live="polite"></span>
+          <span class="inst-btns">
+            <button id="btn-ff" class="ib" title="用粗步长把电路推进到稳态">快进至稳态</button>
+            <button id="btn-reset" class="ib" title="重新上电">重新上电</button>
+            <button id="btn-run" class="ib" aria-pressed="false">暂停</button>
+          </span>
+        </footer>
+      </article>
+
+      <div class="side-insts">
+        <article class="inst dmm reveal">
+          <header class="inst-h"><span class="model">DMM · VC9805A 风格</span><button id="dmm-mode" class="ib">切到 AC</button></header>
+          <div class="lcd"><span id="dmm-val">----</span><small id="dmm-unit">V ⎓</small></div>
+          <p class="inst-note">读数 = 最近 4 个周期的平均值（DC）或交流有效值（AC）</p>
+        </article>
+        <article class="inst bode-card reveal" id="bode-card">
+          <header class="inst-h"><span class="model">扫频仪 · 小信号 AC 分析</span></header>
+          <canvas id="bode" class="screen bodecv" aria-label="幅频特性"></canvas>
+          <p class="inst-note" id="bode-read"></p>
+        </article>
+      </div>
+    </div>
+
+    <article class="card tasks reveal">
+      <header class="card-h"><h2>实验步骤</h2></header>
+      <ol id="tasks"></ol>
+    </article>
+  </section>
+
+  <!-- ============ 原理讲解 ============ -->
+  <section class="pane" id="pane-theory" role="tabpanel" hidden>
+    <article class="prose card paper" id="theory"></article>
+  </section>
+
+  <!-- ============ 数据表 ============ -->
+  <section class="pane" id="pane-data" role="tabpanel" hidden>
+    <div class="datahead card">
+      <p>表格与教案编号一致。点“仿真测量”在浏览器里实时计算；鼠标悬停数值可看 ngspice 参考值与偏差。
+        打开“录入我的实测”可以把实验室数据填在仿真值下面，自动算偏差，数据只保存在本机浏览器。</p>
+      <div class="datahead-act">
+        <label class="switch"><input type="checkbox" id="mine-toggle"><span></span>录入我的实测</label>
+        <button class="btn" id="btn-runall">▶ 一键测量全部</button>
+      </div>
+    </div>
+    <div id="tables"></div>
+  </section>
+
+  <!-- ============ 易错点 / 思考题 ============ -->
+  <section class="pane" id="pane-qa" role="tabpanel" hidden>
+    <div class="qa-grid">
+      <article class="card warn-card"><header class="card-h"><h2>动手要点与易错点</h2></header><ul id="pitfalls" class="pit"></ul></article>
+      <article class="card"><header class="card-h"><h2>思考题（点开看参考答案）</h2></header><div id="qa" class="qa"></div></article>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>本站所有数据均为电路仿真结果（浏览器端 MNA 引擎，已与 ngspice-47 逐项校验），用于预习与对照；课程报告请以实验室实测数据为准。</p>
+  <p><a href="index.html">返回首页</a> · <a href="index.html#engine">引擎精度</a> · <a href="index.html#downloads">PDF 报告下载</a></p>
+</footer>
+
+<script src="data/reference.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/circuits.js"></script>
+<script src="js/schematics.js"></script>
+<script src="js/instruments.js"></script>
+<script src="js/experiments.js"></script>
+<script src="js/content.js"></script>
+<script src="js/colorcode.js"></script>
+<script src="js/lab.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</body>
+</html>

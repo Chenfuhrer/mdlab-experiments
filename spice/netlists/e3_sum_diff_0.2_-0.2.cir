@@ -1,0 +1,25 @@
+* e3_sum_diff_0.2_-0.2
+.include ../models.lib
+VCC vcc 0 12
+VEE vee 0 -12
+V1 u1 0 dc 0 sin(0 0.1 1000.0 0 0 0)
+V2 u2 0 dc 0 sin(0 0.1 1000.0 0 0 180)
+R2 u1 p 10k
+R1 p 0 10k
+R3 u2 n 10k
+RF n uo 100k
+XU p n vcc vee uo LM358
+Vref ref 0 sin(0 0.5 1k)
+
+.options reltol=1e-4 abstol=1e-12 vntol=1e-7
+
+.control
+set wr_singlescale
+set wr_vecnames
+option numdgt=9
+tran 2e-06 0.008 0.004 2e-06
+
+wrdata out.txt v(ref) v(uo)
+quit
+.endc
+.end

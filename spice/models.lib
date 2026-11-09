@@ -1,0 +1,46 @@
+* =====================================================================
+*  models.lib  —  器件模型（ngspice-47 验证通过）
+* =====================================================================
+
+* ---------------------------------------------------------------------
+* 2N5551  NPN 高压小信号管  Gummel-Poon 参数
+* 来源：常见 SPICE 标准库（PSpice / LTspice standard.bjt 同款参数集）
+* 关键参数：BF≈243  VAF=100V  IS=2.511fA
+* ---------------------------------------------------------------------
+.model Q2N5551 NPN(IS=2.511f XTI=3 EG=1.11 VAF=100 BF=242.6 NE=1.249
++ ISE=2.511f IKF=0.3458 XTB=1.5 BR=3.197 NC=2 ISC=0 IKR=0 RC=1
++ CJC=4.883p MJC=0.3047 VJC=0.75 FC=0.5 CJE=18.79p MJE=0.3416 VJE=0.75
++ TR=1.202n TF=560.1p ITF=50m VTF=5 XTF=8 RB=10)
+
+* ---------------------------------------------------------------------
+* LM358  行为级宏模型（自建，按 TI LM358 数据手册典型值标定）
+*   开环增益 Aol = 100 dB        增益带宽积 GBW = 0.7 MHz
+*   压摆率   SR  = 0.3 V/us      第二极点 ≈ 3 MHz
+*   输出摆幅 VOH ≈ V+ - 1.5 V,   VOL ≈ V- + 0.8 V
+*   参数 vos：输入失调电压（默认 0；vos>0 表示同相端等效偏高 vos；漂移演示取 2 mV）
+* 引脚：inp inn vcc vee out
+* ---------------------------------------------------------------------
+.subckt LM358 inp inn vcc vee out params: vos=0
+.param gm0=4.398e-4 imax=30e-6 c1v=100p r1v=227.4Meg
+Vos   inpi inp   dc {vos}
+Rin   inpi inn   10Meg
+Rcm1  inpi mid   1G
+Rcm2  inn  mid   1G
+Bmid  mid  0     V = (V(vcc)+V(vee))/2
+* 跨导级（tanh 限流 → 压摆率 = imax / c1）
+Bg    mid  n1    I = {imax}*tanh({gm0}*(V(inpi)-V(inn))/{imax})
+R1    n1   mid   {r1v}
+C1    n1   mid   {c1v}
+* 输出摆幅钳位（钳在内部节点，避免饱和时积分器"深度饱和"）
+Bhi   vh   0     V = V(vcc)-1.5-0.565
+Blo   vl   0     V = V(vee)+0.8+0.565
+Dhi   n1   vh    DCLMP
+Dlo   vl   n1    DCLMP
+* 第二极点 + 输出级
+Rp2   n1x  n2    1k
+Ep1   n1x  0     n1 0 1
+Cp2   n2   0     53p
+Eo    o1   0     n2 0 1
+Ro    o1   out   50
+.model DCLMP D(IS=1e-14 N=1)
+.ends LM358

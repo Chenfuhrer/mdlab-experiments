@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>原理图图库（开发自检用）</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>body{padding:16px} .g{display:grid;grid-template-columns:repeat(2,1fr);gap:14px} .g>div{background:#fbf9f4;border:1px solid #d6cfbe;border-radius:10px;padding:6px} h4{margin:4px 8px;font:600 13px var(--mono)} .sch .ptag{opacity:1}</style></head>
+<body><div class="g" id="g"></div>
+<script src="../js/schematics.js"></script>
+<script>
+const cases = [
+  ["ce", { R2: true, bypass: "full", RL: null }], ["ce", { R2: false, bypass: "R7", RL: 5100, R3: 53668 }],
+  ["gen", { load50: false }], ["follower", { RL: 5100 }], ["inverting", { RL: 5100 }], ["noninv", { RL: 5100 }],
+  ["suminv", {}], ["addsub", { R1: 10000 }], ["integrator", { rpar: true, vos: 0.002 }], ["differentiator", {}],
+  ["intdiff", { rd: true }], ["lpf", { Rf: 5858 }], ["hpf", { Rf: 5000 }],
+];
+const g = document.getElementById("g");
+cases.forEach(([k, p], i) => {
+  const d = document.createElement("div"); d.innerHTML = `<h4>${k}</h4><div class="schematic" id="s${i}"></div>`; g.appendChild(d);
+  Schematics.render(document.getElementById("s" + i), k, p, { [Object.keys(Schematics.LAY[k](p).probes)[0]]: [] }, null);
+});
+</script></body></html>

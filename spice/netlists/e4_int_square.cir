@@ -1,0 +1,23 @@
+* e4_int_square
+.include ../models.lib
+VCC vcc 0 12
+VEE vee 0 -12
+Vg g 0 dc 0 pulse(1.0 -1.0 0.0025 10n 10n 0.00499999 0.01)
+Rs g ui 50
+R1 p 0 10k
+R2 ui n 10k
+C1 n uo 100n ic=0
+XU p n vcc vee uo LM358 params: vos=0
+
+.options reltol=1e-4 abstol=1e-12 vntol=1e-7
+
+.control
+set wr_singlescale
+set wr_vecnames
+option numdgt=9
+tran 5e-06 0.06 0.02 5e-06 uic
+
+wrdata out.txt v(ui) v(uo)
+quit
+.endc
+.end

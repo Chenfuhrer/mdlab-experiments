@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>模电虚拟实验室 · 低频（模拟）电子线路实验</title>
+<meta name="description" content="在浏览器里做模电实验：共射放大、运放比例/求和、积分微分、有源滤波器。实时电路仿真 + 示波器 + 万用表 + 扫频仪，结果与 ngspice 逐项校验。">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/home.css">
+</head>
+<body class="home">
+<a class="skip" href="#main">跳到正文</a>
+<header class="top">
+  <a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>模电虚拟实验室</a>
+  <nav class="expnav" aria-label="页面导航">
+    <a href="#exps"><span>实验目录</span></a><a href="#engine"><span>仿真引擎</span></a><a href="#downloads"><span>PDF 报告</span></a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="hero-text reveal">
+      <p class="kicker">低频（模拟）电子线路实验 · 2026–2027 第一学期</p>
+      <h1>把模电实验室<br>搬进浏览器</h1>
+      <p class="hero-lead">点原理图上的节点接探头，拧旋钮改参数，示波器实时出波形。六个实验、教案里的每一张数据表，都能在这里先做一遍。</p>
+      <div class="hero-cta">
+        <a class="btn big" href="lab.html?e=1">进入实验 1 · 共射放大</a>
+        <a class="ghostbtn big" href="#engine">仿真结果可信吗？</a>
+      </div>
+      <ul class="hero-facts">
+        <li><b>6</b><span>个实验</span></li>
+        <li><b id="ntab">—</b><span>张数据表一键测量</span></li>
+        <li><b id="maxerr">0.18%</b><span>与 ngspice 最大偏差</span></li>
+      </ul>
+    </div>
+    <figure class="hero-inst inst reveal">
+      <header class="inst-h"><span class="model">DSO · 2CH · 实时仿真</span><span class="model live"><i></i>RUN</span></header>
+      <canvas id="hero-scope" class="screen" aria-label="示波器：共射放大电路的输入与输出波形"></canvas>
+      <figcaption class="inst-f">
+        <span class="legend"><i class="c1"></i><span>CH1 输入 U<sub>i</sub></span></span>
+        <span class="legend"><i class="c2"></i><span>CH2 输出 U<sub>o</sub></span></span>
+        <span class="simstate" id="hero-read"></span>
+      </figcaption>
+      <p class="hero-cap">单级共射放大电路（教案图 1-1），U<sub>s</sub> 在 0.6–3.6 Vpp 之间缓慢变化：输入越大，输出负半周比正半周“胖”得越明显——这就是三极管指数特性造成的非线性失真。</p>
+    </figure>
+  </section>
+
+  <section id="exps" class="exps">
+    <header class="sec-h reveal"><h2>实验目录</h2><p>每个实验都有四页：实验台、原理讲解、数据表、易错点与思考题。</p></header>
+    <div class="exp-grid" id="exp-grid"></div>
+  </section>
+
+  <section id="how" class="how">
+    <header class="sec-h reveal"><h2>实验台怎么用</h2></header>
+    <ol class="how-steps">
+      <li class="reveal"><b>接探头</b>选上方的 CH1 / CH2 / 万用表，再点原理图上的节点。示波器和万用表立即显示该点的电压。</li>
+      <li class="reveal"><b>拧旋钮</b>拖动右侧滑块改信号源幅度、频率和元件值；“预设”按钮对应教案中的每一张图。</li>
+      <li class="reveal"><b>读仪器</b>示波器自动给出峰峰值、频率、增益、相位差和 THD；扫频仪给出幅频特性和截止频率。</li>
+      <li class="reveal"><b>填表格</b>数据表页一键仿真测量，悬停可看 ngspice 参考值；打开“录入我的实测”填实验室数据，自动算偏差、导出 CSV。</li>
+    </ol>
+  </section>
+
+  <section id="engine" class="engine">
+    <header class="sec-h reveal"><h2>仿真结果可信吗？</h2>
+      <p>实验台背后是一个手写的电路仿真引擎（改进节点分析法 + Newton 迭代 + Gear-2 积分），跑在你的浏览器里，不依赖任何服务器。
+      器件用的是 2N5551 的 Gummel-Poon 模型和按数据手册标定的 LM358 宏模型，与离线 ngspice-47 网表完全相同。下表是两者逐项对照。</p></header>
+    <div class="engine-stats reveal" id="engine-stats"></div>
+    <details class="card engine-table reveal"><summary>展开全部对照项</summary><div class="tscroll"><table id="valid-table"></table></div></details>
+    <p class="engine-note reveal">复现方法：在仓库目录运行 <code>node tools/validate.js --full</code>（需 Node.js ≥ 18），与 <code>data/reference.json</code> 中的 ngspice 结果对比。
+      模型局限：BJT 未计入结电容（只影响 MHz 级高频），LM358 宏模型不含交越失真；这些对本课程的测试频率没有影响，但实测与仿真之间的偏差主要会来自器件参数的离散性（例如 β）。</p>
+  </section>
+
+  <section id="downloads" class="downloads">
+    <header class="sec-h reveal"><h2>PDF 版本</h2><p>同一套仿真数据整理成的打印版：实验报告（按教案表格填好）与教程解析（原理讲解 + 思考题）。</p></header>
+    <div class="dl-grid">
+      <a class="dl card reveal" href="downloads/实验报告（仿真版）.pdf" download><span class="dl-k">PDF · 29 页</span><b>实验报告（仿真版）</b><span>六个实验的数据表、波形图、数据分析与结论；附录含模型自检与复现命令。</span></a>
+      <a class="dl card reveal" href="downloads/教程解析.pdf" download><span class="dl-k">PDF · 24 页</span><b>教程解析</b><span>一句话看懂 → 原理讲透 → 逐表解读 → 易错点 → 思考题与参考答案。</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>本站数据均为电路仿真结果，用于预习与对照；课程报告请以实验室实测数据为准。标注［待核对］的内容依赖具体仪器型号，未经核实。</p>
+</footer>
+
+<script src="data/reference.js"></script>
+<script src="data/validation.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/circuits.js"></script>
+<script src="js/schematics.js"></script>
+<script src="js/instruments.js"></script>
+<script src="js/experiments.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

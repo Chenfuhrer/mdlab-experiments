@@ -1,0 +1,29 @@
+* e4_intdiff_square_1k
+.include ../models.lib
+VCC vcc 0 12
+VEE vee 0 -12
+Vg g 0 dc 0 pulse(1.0 -1.0 0 10n 10n 0.00499999 0.01)
+Rs g ui 50
+R1 p1 0 10k
+R2 ui n1 10k
+C1 n1 u1 100n
+R3 n1 u1 100k
+XU1 p1 n1 vcc vee u1 LM358
+Rd u1 u1d 1k
+C2 u1d n2 220n
+R4 p2 0 10k
+R5 n2 uo 10k
+XU2 p2 n2 vcc vee uo LM358
+
+.options reltol=1e-4 abstol=1e-12 vntol=1e-7
+
+.control
+set wr_singlescale
+set wr_vecnames
+option numdgt=9
+tran 5e-06 0.3 0.26 5e-06
+
+wrdata out.txt v(ui) v(uo) v(u1)
+quit
+.endc
+.end
