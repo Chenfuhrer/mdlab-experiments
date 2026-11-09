@@ -27,6 +27,8 @@ python3 -m http.server 8000
 
 然后访问 <http://localhost:8000>。
 
+在线版本：<https://chenfuhrer.github.io/mdlab-experiments/>
+
 ## 部署到 GitHub Pages
 
 1. 把本目录推送到一个 GitHub 仓库的 `main` 分支。
